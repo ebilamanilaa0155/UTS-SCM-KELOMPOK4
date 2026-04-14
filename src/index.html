@@ -88,12 +88,22 @@
             <button onclick="calculate()" class="equal">=</button>
 
             <button onclick="appendValue('0')">0</button>
+            <button onclick="appendValue('.')">.</button>
         </div>
     </div>
 
     <script>
         function appendValue(value) {
-            document.getElementById("display").value += value;
+            let display = document.getElementById("display");
+
+            // Cegah titik ganda dalam satu angka
+            if (value === '.') {
+                let parts = display.value.split(/[\+\-\*\/]/);
+                let lastPart = parts[parts.length - 1];
+                if (lastPart.includes('.')) return;
+            }
+
+            display.value += value;
         }
 
         function clearDisplay() {
@@ -107,7 +117,11 @@
             // ubah persen jadi pembagian 100
             expression = expression.replace(/(\d+)%/g, "($1/100)");
 
-            display.value = eval(expression);
+            try {
+                display.value = eval(expression);
+            } catch {
+                display.value = "Error";
+            }
         }
     </script>
 

@@ -202,8 +202,8 @@
         function addHistory(expr, res) {
             let historyList = document.getElementById("history-list");
 
-            if (historyList.querySelector('p')) {
-                historyList.innerHTML = '';
+            if (historyList.querySelector("p")) {
+                historyList.innerHTML = "";
             }
 
             let div = document.createElement("div");
@@ -218,11 +218,25 @@
             `;
 
             historyList.insertBefore(div, historyList.firstChild);
+
+            let history = JSON.parse(localStorage.getItem("calcHistory")) || [];
+            history.unshift({ expr, res });
+
+            // Maksimal 10 riwayat
+            history = history.slice(0, 10);
+
+            localStorage.setItem("calcHistory", JSON.stringify(history));
+
+            while (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
         }
 
         function clearHistory() {
             document.getElementById("history-list").innerHTML =
                 '<p style="color: #aaa; font-size: 12px;">Belum ada riwayat...</p>';
+
+            localStorage.removeItem("calcHistory");
         }
 
         // Keyboard support
@@ -239,6 +253,31 @@
                 clearDisplay();
             }
         });
+
+        // Load riwayat saat refresh
+        window.onload = function () {
+            let history = JSON.parse(localStorage.getItem("calcHistory")) || [];
+            let historyList = document.getElementById("history-list");
+
+            if (history.length > 0) {
+                historyList.innerHTML = "";
+            }
+
+            history.forEach(item => {
+                let div = document.createElement("div");
+                div.className = "history-item";
+                div.onclick = () => {
+                    document.getElementById("display").value = item.res;
+                };
+
+                div.innerHTML = `
+                    <span class="expr">${item.expr} =</span>
+                    <span class="res">${item.res}</span>
+                `;
+
+                historyList.appendChild(div);
+            });
+        };
     </script>
 
 </body>

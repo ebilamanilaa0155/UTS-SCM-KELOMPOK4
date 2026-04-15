@@ -59,6 +59,62 @@
             background: red;
             color: white;
         }
+        /* Efek Container Utama agar kalkulator dan riwayat berdampingan */
+        body {
+            gap: 20px;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Background lebih HD */
+        }
+
+        .history-panel {
+            width: 250px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+            font-size: 18px;
+        }
+
+        #history-list {
+            list-style: none;
+            padding: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #f9f9f9;
+        }
+
+        .history-item .expr { color: #888; display: block; font-size: 12px; }
+        .history-item .res { color: #333; font-weight: bold; font-size: 16px; }
+
+        .btn-clear-history {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f44336;
+            color: white;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -92,36 +148,53 @@
         </div>
     </div>
 
+    <div class="history-panel">
+        <h3>Riwayat</h3>
+        <div id="history-list">
+            <p style="color: #aaa; font-size: 12px;">Belum ada riwayat...</p>
+        </div>
+        <button onclick="clearHistory()" class="btn-clear-history">Hapus Semua</button>
+    </div>
+
     <script>
-        function appendValue(value) {
-            let display = document.getElementById("display");
-
-            // Cegah titik ganda dalam satu angka
-            if (value === '.') {
-                let parts = display.value.split(/[\+\-\*\/]/);
-                let lastPart = parts[parts.length - 1];
-                if (lastPart.includes('.')) return;
-            }
-
-            display.value += value;
-        }
-
-        function clearDisplay() {
-            document.getElementById("display").value = "";
-        }
-
-        function calculate() {
+       function calculate() {
             let display = document.getElementById("display");
             let expression = display.value;
+            
+            if (!expression) return; // Jangan proses jika kosong
 
-            // ubah persen jadi pembagian 100
-            expression = expression.replace(/(\d+)%/g, "($1/100)");
+            // Ubah persen jadi pembagian 100
+            let formattedExpression = expression.replace(/(\d+)%/g, "($1/100)");
 
             try {
-                display.value = eval(expression);
+                let result = eval(formattedExpression);
+                
+                // --- LOGIKA RIWAYAT ---
+                addHistory(expression, result);
+                
+                display.value = result;
             } catch {
                 display.value = "Error";
             }
+        }
+
+        function addHistory(expr, res) {
+            let historyList = document.getElementById("history-list");
+            
+            // Hapus tulisan "Belum ada riwayat" jika ini entri pertama
+            if (historyList.querySelector('p')) historyList.innerHTML = '';
+
+            let div = document.createElement("div");
+            div.className = "history-item";
+            div.onclick = () => { document.getElementById("display").value = res; }; // Klik riwayat untuk pakai angka lagi
+            div.innerHTML = `<span class="expr">${expr} =</span><span class="res">${res}</span>`;
+            
+            // Tambahkan ke paling atas
+            historyList.insertBefore(div, historyList.firstChild);
+        }
+
+        function clearHistory() {
+            document.getElementById("history-list").innerHTML = '<p style="color: #aaa; font-size: 12px;">Belum ada riwayat...</p>';
         }
     </script>
 

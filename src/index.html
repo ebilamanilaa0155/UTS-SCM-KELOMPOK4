@@ -11,7 +11,8 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #f4f4f4;
+            gap: 20px;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
         }
 
         .calculator {
@@ -50,6 +51,11 @@
             background: #bbb;
         }
 
+        button:disabled {
+            background: transparent;
+            cursor: default;
+        }
+
         .equal {
             background: #4CAF50;
             color: white;
@@ -58,11 +64,6 @@
         .clear {
             background: red;
             color: white;
-        }
-        /* Efek Container Utama agar kalkulator dan riwayat berdampingan */
-        body {
-            gap: 20px;
-            background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Background lebih HD */
         }
 
         .history-panel {
@@ -103,8 +104,17 @@
             background: #f9f9f9;
         }
 
-        .history-item .expr { color: #888; display: block; font-size: 12px; }
-        .history-item .res { color: #333; font-weight: bold; font-size: 16px; }
+        .history-item .expr {
+            color: #888;
+            display: block;
+            font-size: 12px;
+        }
+
+        .history-item .res {
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
+        }
 
         .btn-clear-history {
             margin-top: 10px;
@@ -124,27 +134,29 @@
 
         <div class="buttons">
             <button onclick="clearDisplay()" class="clear">C</button>
+            <button onclick="deleteLast()">⌫</button>
             <button onclick="appendValue('%')">%</button>
             <button onclick="appendValue('/')">/</button>
-            <button onclick="appendValue('*')">*</button>
 
             <button onclick="appendValue('7')">7</button>
             <button onclick="appendValue('8')">8</button>
             <button onclick="appendValue('9')">9</button>
-            <button onclick="appendValue('-')">-</button>
+            <button onclick="appendValue('*')">*</button>
 
             <button onclick="appendValue('4')">4</button>
             <button onclick="appendValue('5')">5</button>
             <button onclick="appendValue('6')">6</button>
-            <button onclick="appendValue('+')">+</button>
+            <button onclick="appendValue('-')">-</button>
 
             <button onclick="appendValue('1')">1</button>
             <button onclick="appendValue('2')">2</button>
             <button onclick="appendValue('3')">3</button>
-            <button onclick="calculate()" class="equal">=</button>
+            <button onclick="appendValue('+')">+</button>
 
             <button onclick="appendValue('0')">0</button>
             <button onclick="appendValue('.')">.</button>
+            <button onclick="calculate()" class="equal">=</button>
+            <button disabled></button>
         </div>
     </div>
 
@@ -157,21 +169,30 @@
     </div>
 
     <script>
-       function calculate() {
+        function appendValue(value) {
+            document.getElementById("display").value += value;
+        }
+
+        function clearDisplay() {
+            document.getElementById("display").value = "";
+        }
+
+        function deleteLast() {
+            let display = document.getElementById("display");
+            display.value = display.value.slice(0, -1);
+        }
+
+        function calculate() {
             let display = document.getElementById("display");
             let expression = display.value;
-            
-            if (!expression) return; // Jangan proses jika kosong
 
-            // Ubah persen jadi pembagian 100
+            if (!expression) return;
+
             let formattedExpression = expression.replace(/(\d+)%/g, "($1/100)");
 
             try {
                 let result = eval(formattedExpression);
-                
-                // --- LOGIKA RIWAYAT ---
                 addHistory(expression, result);
-                
                 display.value = result;
             } catch {
                 display.value = "Error";
@@ -180,22 +201,44 @@
 
         function addHistory(expr, res) {
             let historyList = document.getElementById("history-list");
-            
-            // Hapus tulisan "Belum ada riwayat" jika ini entri pertama
-            if (historyList.querySelector('p')) historyList.innerHTML = '';
+
+            if (historyList.querySelector('p')) {
+                historyList.innerHTML = '';
+            }
 
             let div = document.createElement("div");
             div.className = "history-item";
-            div.onclick = () => { document.getElementById("display").value = res; }; // Klik riwayat untuk pakai angka lagi
-            div.innerHTML = `<span class="expr">${expr} =</span><span class="res">${res}</span>`;
-            
-            // Tambahkan ke paling atas
+            div.onclick = () => {
+                document.getElementById("display").value = res;
+            };
+
+            div.innerHTML = `
+                <span class="expr">${expr} =</span>
+                <span class="res">${res}</span>
+            `;
+
             historyList.insertBefore(div, historyList.firstChild);
         }
 
         function clearHistory() {
-            document.getElementById("history-list").innerHTML = '<p style="color: #aaa; font-size: 12px;">Belum ada riwayat...</p>';
+            document.getElementById("history-list").innerHTML =
+                '<p style="color: #aaa; font-size: 12px;">Belum ada riwayat...</p>';
         }
+
+        // Keyboard support
+        document.addEventListener("keydown", function(e) {
+            const key = e.key;
+
+            if (!isNaN(key) || ['+', '-', '*', '/', '.', '%'].includes(key)) {
+                appendValue(key);
+            } else if (key === "Enter") {
+                calculate();
+            } else if (key === "Backspace") {
+                deleteLast();
+            } else if (key === "Escape") {
+                clearDisplay();
+            }
+        });
     </script>
 
 </body>

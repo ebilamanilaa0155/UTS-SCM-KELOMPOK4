@@ -24,7 +24,7 @@
         }
 
         #display {
-            width: 100%;
+            width: 226px; /* Disesuaikan sedikit agar pas dengan padding */
             height: 50px;
             margin-bottom: 10px;
             text-align: right;
@@ -124,6 +124,12 @@
             border-radius: 5px;
             font-size: 12px;
             text-align: center;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-clear-history:hover {
+            background: #d32f2f;
         }
     </style>
 </head>
@@ -156,7 +162,8 @@
             <button onclick="appendValue('0')">0</button>
             <button onclick="appendValue('.')">.</button>
             <button onclick="calculate()" class="equal">=</button>
-            <button disabled></button>
+            
+            <button onclick="appendValue(' mod ')">Mod</button>
         </div>
     </div>
 
@@ -188,7 +195,11 @@
 
             if (!expression) return;
 
+            // Mengubah format persentase
             let formattedExpression = expression.replace(/(\d+)%/g, "($1/100)");
+            
+            // Mengubah format kata 'mod' menjadi operator '%' untuk dihitung
+            formattedExpression = formattedExpression.replace(/mod/gi, "%");
 
             try {
                 let result = eval(formattedExpression);
@@ -239,11 +250,11 @@
             localStorage.removeItem("calcHistory");
         }
 
-        // Keyboard support
+        // Keyboard support yang sudah ditambahkan dukungan untuk 'm', 'o', 'd'
         document.addEventListener("keydown", function(e) {
             const key = e.key;
 
-            if (!isNaN(key) || ['+', '-', '*', '/', '.', '%'].includes(key)) {
+            if (!isNaN(key) || ['+', '-', '*', '/', '.', '%', 'm', 'o', 'd', ' '].includes(key.toLowerCase())) {
                 appendValue(key);
             } else if (key === "Enter") {
                 calculate();
